@@ -4,9 +4,7 @@ export default {
     slug: "hushcircle",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png",
-    userInterfaceStyle: "dark",
-    scheme: "hushcircle",
+    icon: "./assets/icon.png",    scheme: "hushcircle",
     assetBundlePatterns: ["**/*"],
     splash: {
       image: "./assets/splash.png",
