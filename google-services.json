@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "739058926186",
+    "project_id": "hushcircle-b4de1",
+    "storage_bucket": "hushcircle-b4de1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:739058926186:android:929b609b007807f15d8013",
+        "android_client_info": {
+          "package_name": "com.hushcircle.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDECY8v4Px7T9Go5GmFjn7aoNdwFWSOXEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
