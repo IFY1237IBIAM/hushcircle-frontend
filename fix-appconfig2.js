@@ -1,4 +1,6 @@
-export default {
+const fs = require("fs");
+
+const appConfig = `export default {
   expo: {
     name: "HushCircle",
     slug: "hushcircle",
@@ -64,3 +66,7 @@ export default {
     }
   }
 };
+`;
+
+fs.writeFileSync("app.config.js", appConfig);
+console.log("Done - fixed googleServicesFile to use local path");
