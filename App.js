@@ -1,9 +1,3 @@
-if (typeof ErrorUtils !== 'undefined') {
-  ErrorUtils.setGlobalHandler((error, isFatal) => {
-    console.log('GLOBAL ERROR:', error.message);
-    console.log('STACK:', error.stack);
-  });
-}
 import { useEffect, useState, useRef } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
