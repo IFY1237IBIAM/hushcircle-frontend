@@ -5,27 +5,21 @@ import {
   RefreshControl, TextInput, Modal, ScrollView,
 } from "react-native";
 import Svg, { Path, Circle, Line, Polyline, Rect, G } from "react-native-svg";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import api from "../api/api";
 import HushCircleSpinner from "../components/HushCircleSpinner";
-import useSpinner from "../hooks/useSpinner";import { useTheme } from "../context/ThemeContext";
+import useSpinner from "../hooks/useSpinner";
 
-// Module-level color fallbacks for icon defaults (theme-aware colors used inside component)
-const DARK = {
-  accent: "#9B6FD4",
-  accentSoft: "#C4A3E8",
-  text: "#EDE8F5",
-  textMuted: "#8B7FA8",
-  error: "#D4607A",
-  success: "#4CAF8F",
-  warning: "#D4A44C",
+const COLORS = {
+  bg: "#0F0A1E", card: "#1A1330", border: "#2D2450",
+  accent: "#9B6FD4", accentSoft: "#C4A3E8",
+  text: "#EDE8F5", textMuted: "#8B7FA8",
+  error: "#D4607A", success: "#4CAF8F", warning: "#D4A44C",
 };
-
-
 
 // ── SVG Icons ──────────────────────────────────────────────────────────────
 
-const FlagIcon = ({ size = 14, color = DARK.warning }) => (
+const FlagIcon = ({ size = 14, color = COLORS.warning }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -33,14 +27,14 @@ const FlagIcon = ({ size = 14, color = DARK.warning }) => (
   </Svg>
 );
 
-const BanCircleIcon = ({ size = 14, color = DARK.error }) => (
+const BanCircleIcon = ({ size = 14, color = COLORS.error }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth={2} />
     <Line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke={color} strokeWidth={2} strokeLinecap="round" />
   </Svg>
 );
 
-const MailIcon = ({ size = 14, color = DARK.accentSoft }) => (
+const MailIcon = ({ size = 14, color = COLORS.accentSoft }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -48,7 +42,7 @@ const MailIcon = ({ size = 14, color = DARK.accentSoft }) => (
   </Svg>
 );
 
-const UsersIcon = ({ size = 14, color = DARK.textMuted }) => (
+const UsersIcon = ({ size = 14, color = COLORS.textMuted }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -58,7 +52,7 @@ const UsersIcon = ({ size = 14, color = DARK.textMuted }) => (
   </Svg>
 );
 
-const ClipboardIcon = ({ size = 14, color = DARK.textMuted }) => (
+const ClipboardIcon = ({ size = 14, color = COLORS.textMuted }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -67,7 +61,7 @@ const ClipboardIcon = ({ size = 14, color = DARK.textMuted }) => (
   </Svg>
 );
 
-const TrashIcon = ({ size = 14, color = DARK.error }) => (
+const TrashIcon = ({ size = 14, color = COLORS.error }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Polyline points="3 6 5 6 21 6" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     <Path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
@@ -78,13 +72,13 @@ const TrashIcon = ({ size = 14, color = DARK.error }) => (
   </Svg>
 );
 
-const CheckIcon = ({ size = 14, color = DARK.success }) => (
+const CheckIcon = ({ size = 14, color = COLORS.success }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Polyline points="20 6 9 17 4 12" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const LockIcon = ({ size = 14, color = DARK.error }) => (
+const LockIcon = ({ size = 14, color = COLORS.error }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Rect x="3" y="11" width="18" height="11" rx="2" ry="2"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -93,7 +87,7 @@ const LockIcon = ({ size = 14, color = DARK.error }) => (
   </Svg>
 );
 
-const UnlockIcon = ({ size = 20, color = DARK.success }) => (
+const UnlockIcon = ({ size = 20, color = COLORS.success }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Rect x="3" y="11" width="18" height="11" rx="2" ry="2"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -102,21 +96,21 @@ const UnlockIcon = ({ size = 20, color = DARK.success }) => (
   </Svg>
 );
 
-const ZapIcon = ({ size = 14, color = DARK.error }) => (
+const ZapIcon = ({ size = 14, color = COLORS.error }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const SearchIcon = ({ size = 20, color = DARK.text }) => (
+const SearchIcon = ({ size = 20, color = COLORS.text }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="11" cy="11" r="8" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     <Line x1="21" y1="21" x2="16.65" y2="16.65" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const AlertTriangleIcon = ({ size = 14, color = DARK.warning }) => (
+const AlertTriangleIcon = ({ size = 14, color = COLORS.warning }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -125,7 +119,7 @@ const AlertTriangleIcon = ({ size = 14, color = DARK.warning }) => (
   </Svg>
 );
 
-const InfoIcon = ({ size = 14, color = DARK.accent }) => (
+const InfoIcon = ({ size = 14, color = COLORS.accent }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth={2} />
     <Line x1="12" y1="8" x2="12" y2="8" stroke={color} strokeWidth={2} strokeLinecap="round" />
@@ -133,14 +127,14 @@ const InfoIcon = ({ size = 14, color = DARK.accent }) => (
   </Svg>
 );
 
-const CheckCircleIcon = ({ size = 14, color = DARK.success }) => (
+const CheckCircleIcon = ({ size = 14, color = COLORS.success }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     <Polyline points="22 4 12 14.01 9 11.01" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const XCircleIcon = ({ size = 14, color = DARK.error }) => (
+const XCircleIcon = ({ size = 14, color = COLORS.error }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth={2} />
     <Line x1="15" y1="9" x2="9" y2="15" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -148,14 +142,14 @@ const XCircleIcon = ({ size = 14, color = DARK.error }) => (
   </Svg>
 );
 
-const ClockIcon = ({ size = 14, color = DARK.warning }) => (
+const ClockIcon = ({ size = 14, color = COLORS.warning }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth={2} />
     <Polyline points="12 6 12 12 16 14" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const ShieldIcon = ({ size = 44, color = DARK.accent }) => (
+const ShieldIcon = ({ size = 44, color = COLORS.accent }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
       fill={color + "22"} stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
@@ -163,14 +157,14 @@ const ShieldIcon = ({ size = 44, color = DARK.accent }) => (
   </Svg>
 );
 
-const LeafIcon = ({ size = 44, color = DARK.success }) => (
+const LeafIcon = ({ size = 44, color = COLORS.success }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 8-12 9"
       fill={color + "22"} stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const InboxIcon = ({ size = 44, color = DARK.accentSoft }) => (
+const InboxIcon = ({ size = 44, color = COLORS.accentSoft }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Polyline points="22 12 16 12 14 15 10 15 8 12 2 12"
       stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
@@ -179,7 +173,7 @@ const InboxIcon = ({ size = 44, color = DARK.accentSoft }) => (
   </Svg>
 );
 
-const UsersEmptyIcon = ({ size = 44, color = DARK.textMuted }) => (
+const UsersEmptyIcon = ({ size = 44, color = COLORS.textMuted }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
       stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
@@ -189,7 +183,7 @@ const UsersEmptyIcon = ({ size = 44, color = DARK.textMuted }) => (
   </Svg>
 );
 
-const ClipboardEmptyIcon = ({ size = 44, color = DARK.textMuted }) => (
+const ClipboardEmptyIcon = ({ size = 44, color = COLORS.textMuted }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
       stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
@@ -200,7 +194,7 @@ const ClipboardEmptyIcon = ({ size = 44, color = DARK.textMuted }) => (
   </Svg>
 );
 
-const MailPendingIcon = ({ size = 20, color = DARK.warning }) => (
+const MailPendingIcon = ({ size = 20, color = COLORS.warning }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
       stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -208,14 +202,14 @@ const MailPendingIcon = ({ size = 20, color = DARK.warning }) => (
   </Svg>
 );
 
-const HeartIcon = ({ size = 14, color = DARK.accent }) => (
+const HeartIcon = ({ size = 14, color = COLORS.accent }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
       fill={color + "44"} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const ArrowRightIcon = ({ size = 13, color = DARK.accentSoft }) => (
+const ArrowRightIcon = ({ size = 13, color = COLORS.accentSoft }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Line x1="5" y1="12" x2="19" y2="12" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     <Polyline points="12 5 19 12 12 19" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -225,37 +219,37 @@ const ArrowRightIcon = ({ size = 13, color = DARK.accentSoft }) => (
 // ── Reason label configs — Icon + label instead of emoji prefix ────────────
 
 const REASON_CONFIG = {
-  harmful_content: { Icon: AlertTriangleIcon, color: DARK.warning,    label: "Harmful" },
-  spam:            { Icon: BanCircleIcon,     color: DARK.textMuted,  label: "Spam" },
-  inappropriate:   { Icon: XCircleIcon,       color: DARK.error,      label: "Inappropriate" },
-  bullying:        { Icon: AlertTriangleIcon, color: DARK.error,      label: "Bullying" },
-  misinformation:  { Icon: InfoIcon,          color: DARK.warning,    label: "Misinfo" },
-  other:           { Icon: MailIcon,          color: DARK.textMuted,  label: "Other" },
+  harmful_content: { Icon: AlertTriangleIcon, color: COLORS.warning,    label: "Harmful" },
+  spam:            { Icon: BanCircleIcon,     color: COLORS.textMuted,  label: "Spam" },
+  inappropriate:   { Icon: XCircleIcon,       color: COLORS.error,      label: "Inappropriate" },
+  bullying:        { Icon: AlertTriangleIcon, color: COLORS.error,      label: "Bullying" },
+  misinformation:  { Icon: InfoIcon,          color: COLORS.warning,    label: "Misinfo" },
+  other:           { Icon: MailIcon,          color: COLORS.textMuted,  label: "Other" },
 };
 
 const GROUP_REASON_CONFIG = {
-  harassment:    { Icon: AlertTriangleIcon, color: DARK.error,     label: "Harassment" },
-  bullying:      { Icon: AlertTriangleIcon, color: DARK.error,     label: "Bullying" },
-  spam:          { Icon: BanCircleIcon,     color: DARK.textMuted, label: "Spam" },
-  inappropriate: { Icon: XCircleIcon,       color: DARK.error,     label: "Inappropriate" },
-  other:         { Icon: MailIcon,          color: DARK.textMuted, label: "Other" },
+  harassment:    { Icon: AlertTriangleIcon, color: COLORS.error,     label: "Harassment" },
+  bullying:      { Icon: AlertTriangleIcon, color: COLORS.error,     label: "Bullying" },
+  spam:          { Icon: BanCircleIcon,     color: COLORS.textMuted, label: "Spam" },
+  inappropriate: { Icon: XCircleIcon,       color: COLORS.error,     label: "Inappropriate" },
+  other:         { Icon: MailIcon,          color: COLORS.textMuted, label: "Other" },
 };
 
 // ── Appeal status config ───────────────────────────────────────────────────
 
 const APPEAL_STATUS_CONFIG = {
-  accepted: { Icon: CheckCircleIcon, color: DARK.success, label: "Accepted" },
-  rejected: { Icon: XCircleIcon,     color: DARK.error,   label: "Rejected" },
-  pending:  { Icon: ClockIcon,       color: DARK.warning, label: "Pending" },
+  accepted: { Icon: CheckCircleIcon, color: COLORS.success, label: "Accepted" },
+  rejected: { Icon: XCircleIcon,     color: COLORS.error,   label: "Rejected" },
+  pending:  { Icon: ClockIcon,       color: COLORS.warning, label: "Pending" },
 };
 
 // ── Action type config ─────────────────────────────────────────────────────
 
 const ACTION_TYPE_CONFIG = {
-  delete_post:           { Icon: TrashIcon,   color: DARK.error,   label: "Post removed" },
-  dismiss_report:        { Icon: CheckIcon,   color: DARK.success, label: "Dismissed" },
-  group_report_reviewed: { Icon: UsersIcon,   color: DARK.accent,  label: "Group report reviewed" },
-  default:               { Icon: UnlockIcon,  color: DARK.success, label: "Account updated" },
+  delete_post:           { Icon: TrashIcon,   color: COLORS.error,   label: "Post removed" },
+  dismiss_report:        { Icon: CheckIcon,   color: COLORS.success, label: "Dismissed" },
+  group_report_reviewed: { Icon: UsersIcon,   color: COLORS.accent,  label: "Group report reviewed" },
+  default:               { Icon: UnlockIcon,  color: COLORS.success, label: "Account updated" },
 };
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -270,13 +264,13 @@ const timeAgo = (date) => {
 };
 
 const strikeColor = (count) => {
-  if (count >= 3) return DARK.error;
-  if (count === 2) return DARK.warning;
-  return DARK.textMuted;
+  if (count >= 3) return COLORS.error;
+  if (count === 2) return COLORS.warning;
+  return COLORS.textMuted;
 };
 
 export default function AdminScreen() {
-  const { colors: COLORS } = useTheme();
+  const navigation = useNavigation();
   const [reports, setReports] = useState([]);
   const [bannedUsers, setBannedUsers] = useState([]);
   const [appeals, setAppeals] = useState([]);
@@ -750,6 +744,30 @@ export default function AdminScreen() {
           </View>
         </TouchableOpacity>
       </View>
+      {/* Recovery Requests */}
+<TouchableOpacity
+  style={{
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 8,
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  }}
+  onPress={() => navigation.navigate("AdminRecoveryRequests")}
+>
+  <Text
+    style={{
+      color: COLORS.text,
+      fontFamily: "Nunito_700Bold",
+      fontSize: 14,
+    }}
+  >
+    Recovery Requests
+  </Text>
+</TouchableOpacity>
 
       {/* Stats */}
       {stats && (
@@ -1149,161 +1167,160 @@ export default function AdminScreen() {
   );
 }
 
-    const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#0F0A1E" },
-    centered: { flex: 1, backgroundColor: "#0F0A1E", justifyContent: "center", alignItems: "center", gap: 12 },
-    loadingText: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 14 },
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  centered: { flex: 1, backgroundColor: COLORS.bg, justifyContent: "center", alignItems: "center", gap: 12 },
+  loadingText: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 14 },
 
-    header: { paddingTop: 56, paddingBottom: 12, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: "#2D2450", flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    headerTitle: { fontSize: 26, color: "#EDE8F5", fontFamily: "DMSerifDisplay_400Regular" },
-    headerSub: { fontSize: 12, color: "#8B7FA8", fontFamily: "Nunito_400Regular", marginTop: 2 },
-    lookupTriggerBtn: { backgroundColor: "#1A1330", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: "#2D2450" },
-    lookupTriggerText: { color: "#EDE8F5", fontFamily: "Nunito_600SemiBold", fontSize: 13 },
+  header: { paddingTop: 56, paddingBottom: 12, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: COLORS.border, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  headerTitle: { fontSize: 26, color: COLORS.text, fontFamily: "DMSerifDisplay_400Regular" },
+  headerSub: { fontSize: 12, color: COLORS.textMuted, fontFamily: "Nunito_400Regular", marginTop: 2 },
+  lookupTriggerBtn: { backgroundColor: COLORS.card, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: COLORS.border },
+  lookupTriggerText: { color: COLORS.text, fontFamily: "Nunito_600SemiBold", fontSize: 13 },
 
-    statsRow: { flexDirection: "row", padding: 12, gap: 6 },
-    statItem: { flex: 1, backgroundColor: "#1A1330", borderRadius: 12, padding: 10, alignItems: "center", borderWidth: 1, borderColor: "#2D2450" },
-    statNum: { fontSize: 20, fontFamily: "DMSerifDisplay_400Regular", marginBottom: 2 },
-    statLabel: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 10 },
+  statsRow: { flexDirection: "row", padding: 12, gap: 6 },
+  statItem: { flex: 1, backgroundColor: COLORS.card, borderRadius: 12, padding: 10, alignItems: "center", borderWidth: 1, borderColor: COLORS.border },
+  statNum: { fontSize: 20, fontFamily: "DMSerifDisplay_400Regular", marginBottom: 2 },
+  statLabel: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 10 },
 
-    tabScroll: { flexGrow: 0 },
-    tabRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 12 },
-    tabBtn: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 20, backgroundColor: "#1A1330", borderWidth: 1, borderColor: "#2D2450" },
-    tabBtnActive: { backgroundColor: "#9B6FD4", borderColor: "#9B6FD4" },
-    tabBtnInner: { flexDirection: "row", alignItems: "center", gap: 5 },
-    tabBtnText: { color: "#8B7FA8", fontFamily: "Nunito_600SemiBold", fontSize: 13 },
-    tabBtnTextActive: { color: "#fff" },
-    list: { padding: 16, paddingTop: 4 },
+  tabScroll: { flexGrow: 0 },
+  tabRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 12 },
+  tabBtn: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 20, backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border },
+  tabBtnActive: { backgroundColor: COLORS.accent, borderColor: COLORS.accent },
+  tabBtnInner: { flexDirection: "row", alignItems: "center", gap: 5 },
+  tabBtnText: { color: COLORS.textMuted, fontFamily: "Nunito_600SemiBold", fontSize: 13 },
+  tabBtnTextActive: { color: "#fff" },
+  list: { padding: 16, paddingTop: 4 },
 
-    // Shared inline row
-    btnInner: { flexDirection: "row", alignItems: "center", gap: 6 },
+  // Shared inline row
+  btnInner: { flexDirection: "row", alignItems: "center", gap: 6 },
 
-    reportCard: { backgroundColor: "#1A1330", borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#2D2450" },
-    reportHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 },
-    reportPseudonym: { color: "#C4A3E8", fontFamily: "Nunito_700Bold", fontSize: 14, marginBottom: 4 },
-    strikeBadgeRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-    strikeDot: { width: 8, height: 8, borderRadius: 4 },
-    strikeLabel: { fontFamily: "Nunito_600SemiBold", fontSize: 11, marginLeft: 2 },
-    reportRight: { alignItems: "flex-end", gap: 4 },
-    reportCountBadge: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
-    reportCount: { fontFamily: "Nunito_700Bold", fontSize: 12 },
-    actionRequiredBadge: { backgroundColor: "#D4607A" + "22", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 4, alignItems: "center", justifyContent: "center" },
-    postPreview: { color: "#EDE8F5", fontFamily: "Nunito_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 10, fontStyle: "italic" },
-    reasonsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 8 },
-    reasonChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#0F0A1E", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: "#2D2450" },
-    reasonText: { color: "#8B7FA8", fontFamily: "Nunito_500Medium", fontSize: 11 },
-    reportTime: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11, marginBottom: 12 },
-    reportActions: { flexDirection: "row", gap: 10 },
-    dismissBtn: { flex: 1, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: "#4CAF8F" + "66", alignItems: "center" },
-    dismissBtnText: { color: "#4CAF8F", fontFamily: "Nunito_700Bold", fontSize: 13 },
-    deleteBtn: { flex: 1, padding: 12, borderRadius: 10, backgroundColor: "#D4607A" + "22", borderWidth: 1, borderColor: "#D4607A" + "44", alignItems: "center" },
-    deleteBtnText: { color: "#D4607A", fontFamily: "Nunito_700Bold", fontSize: 13 },
+  reportCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border },
+  reportHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 },
+  reportPseudonym: { color: COLORS.accentSoft, fontFamily: "Nunito_700Bold", fontSize: 14, marginBottom: 4 },
+  strikeBadgeRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  strikeDot: { width: 8, height: 8, borderRadius: 4 },
+  strikeLabel: { fontFamily: "Nunito_600SemiBold", fontSize: 11, marginLeft: 2 },
+  reportRight: { alignItems: "flex-end", gap: 4 },
+  reportCountBadge: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
+  reportCount: { fontFamily: "Nunito_700Bold", fontSize: 12 },
+  actionRequiredBadge: { backgroundColor: COLORS.error + "22", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 4, alignItems: "center", justifyContent: "center" },
+  postPreview: { color: COLORS.text, fontFamily: "Nunito_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 10, fontStyle: "italic" },
+  reasonsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 8 },
+  reasonChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: COLORS.bg, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: COLORS.border },
+  reasonText: { color: COLORS.textMuted, fontFamily: "Nunito_500Medium", fontSize: 11 },
+  reportTime: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11, marginBottom: 12 },
+  reportActions: { flexDirection: "row", gap: 10 },
+  dismissBtn: { flex: 1, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: COLORS.success + "66", alignItems: "center" },
+  dismissBtnText: { color: COLORS.success, fontFamily: "Nunito_700Bold", fontSize: 13 },
+  deleteBtn: { flex: 1, padding: 12, borderRadius: 10, backgroundColor: COLORS.error + "22", borderWidth: 1, borderColor: COLORS.error + "44", alignItems: "center" },
+  deleteBtnText: { color: COLORS.error, fontFamily: "Nunito_700Bold", fontSize: 13 },
 
-    groupReportCard: { backgroundColor: "#1A1330", borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#2D2450", borderLeftWidth: 3, borderLeftColor: "#D4A44C" },
-    groupReportHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 },
-    groupReportTitle: { color: "#C4A3E8", fontFamily: "Nunito_700Bold", fontSize: 14 },
-    groupReportSub: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12, marginTop: 2 },
-    groupReportDetails: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12, fontStyle: "italic", marginBottom: 8 },
+  groupReportCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border, borderLeftWidth: 3, borderLeftColor: COLORS.warning },
+  groupReportHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 },
+  groupReportTitle: { color: COLORS.accentSoft, fontFamily: "Nunito_700Bold", fontSize: 14 },
+  groupReportSub: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, marginTop: 2 },
+  groupReportDetails: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, fontStyle: "italic", marginBottom: 8 },
 
-    bannedCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#1A1330", borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: "#D4607A" + "33" },
-    bannedLeft: { position: "relative" },
-    bannedAvatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: "#D4607A" + "22", justifyContent: "center", alignItems: "center", borderWidth: 1.5, borderColor: "#D4607A" + "55" },
-    bannedAvatarText: { color: "#D4607A", fontFamily: "Nunito_700Bold", fontSize: 18 },
-    bannedStatusDot: { position: "absolute", bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, backgroundColor: "#D4607A", borderWidth: 2, borderColor: "#1A1330" },
-    bannedInfo: { flex: 1 },
-    bannedNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" },
-    bannedPseudonym: { color: "#EDE8F5", fontFamily: "Nunito_700Bold", fontSize: 15 },
-    appealPendingBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#D4A44C" + "22", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
-    appealPendingBadgeText: { color: "#D4A44C", fontFamily: "Nunito_600SemiBold", fontSize: 10 },
-    appealRejectedBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#D4607A" + "22", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
-    appealRejectedBadgeText: { color: "#D4607A", fontFamily: "Nunito_600SemiBold", fontSize: 10 },
-    violationDotsRow: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 4 },
-    vDot: { width: 10, height: 10, borderRadius: 5 },
-    violationText: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11, marginLeft: 4 },
-    bannedMeta: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11, marginBottom: 2 },
-    bannedReason: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11, fontStyle: "italic" },
-    unbanBtn: { backgroundColor: "#4CAF8F" + "22", borderRadius: 12, padding: 10, alignItems: "center", borderWidth: 1, borderColor: "#4CAF8F" + "44", minWidth: 56 },
-    unbanBtnLabel: { color: "#4CAF8F", fontFamily: "Nunito_700Bold", fontSize: 11, marginTop: 2 },
-    lockedBtn: { backgroundColor: "#2D2450", borderRadius: 12, padding: 10, alignItems: "center", minWidth: 56, opacity: 0.6 },
-    lockedBtnLabel: { color: "#8B7FA8", fontFamily: "Nunito_600SemiBold", fontSize: 11, marginTop: 2 },
+  bannedCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: COLORS.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLORS.error + "33" },
+  bannedLeft: { position: "relative" },
+  bannedAvatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: COLORS.error + "22", justifyContent: "center", alignItems: "center", borderWidth: 1.5, borderColor: COLORS.error + "55" },
+  bannedAvatarText: { color: COLORS.error, fontFamily: "Nunito_700Bold", fontSize: 18 },
+  bannedStatusDot: { position: "absolute", bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, backgroundColor: COLORS.error, borderWidth: 2, borderColor: COLORS.card },
+  bannedInfo: { flex: 1 },
+  bannedNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" },
+  bannedPseudonym: { color: COLORS.text, fontFamily: "Nunito_700Bold", fontSize: 15 },
+  appealPendingBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: COLORS.warning + "22", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
+  appealPendingBadgeText: { color: COLORS.warning, fontFamily: "Nunito_600SemiBold", fontSize: 10 },
+  appealRejectedBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: COLORS.error + "22", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
+  appealRejectedBadgeText: { color: COLORS.error, fontFamily: "Nunito_600SemiBold", fontSize: 10 },
+  violationDotsRow: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 4 },
+  vDot: { width: 10, height: 10, borderRadius: 5 },
+  violationText: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11, marginLeft: 4 },
+  bannedMeta: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11, marginBottom: 2 },
+  bannedReason: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11, fontStyle: "italic" },
+  unbanBtn: { backgroundColor: COLORS.success + "22", borderRadius: 12, padding: 10, alignItems: "center", borderWidth: 1, borderColor: COLORS.success + "44", minWidth: 56 },
+  unbanBtnLabel: { color: COLORS.success, fontFamily: "Nunito_700Bold", fontSize: 11, marginTop: 2 },
+  lockedBtn: { backgroundColor: COLORS.border, borderRadius: 12, padding: 10, alignItems: "center", minWidth: 56, opacity: 0.6 },
+  lockedBtnLabel: { color: COLORS.textMuted, fontFamily: "Nunito_600SemiBold", fontSize: 11, marginTop: 2 },
 
-    appealCard: { backgroundColor: "#1A1330", borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: "#2D2450", borderLeftWidth: 3 },
-    appealHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-    appealPseudonym: { color: "#C4A3E8", fontFamily: "Nunito_700Bold", fontSize: 14 },
-    appealStatusBadge: { flexDirection: "row", alignItems: "center", gap: 4, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
-    appealStatusText: { fontFamily: "Nunito_700Bold", fontSize: 11 },
-    appealMessage: { color: "#EDE8F5", fontFamily: "Nunito_400Regular", fontSize: 13, lineHeight: 20, fontStyle: "italic", marginBottom: 8 },
-    appealTime: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11, marginBottom: 10 },
-    reviewAppealBtn: { backgroundColor: "#9B6FD4" + "22", borderRadius: 10, padding: 10, alignItems: "center", borderWidth: 1, borderColor: "#9B6FD4" + "44" },
-    reviewAppealBtnText: { color: "#C4A3E8", fontFamily: "Nunito_700Bold", fontSize: 13 },
-    appealReviewNote: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12, fontStyle: "italic", marginTop: 6 },
+  appealCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: COLORS.border, borderLeftWidth: 3 },
+  appealHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+  appealPseudonym: { color: COLORS.accentSoft, fontFamily: "Nunito_700Bold", fontSize: 14 },
+  appealStatusBadge: { flexDirection: "row", alignItems: "center", gap: 4, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
+  appealStatusText: { fontFamily: "Nunito_700Bold", fontSize: 11 },
+  appealMessage: { color: COLORS.text, fontFamily: "Nunito_400Regular", fontSize: 13, lineHeight: 20, fontStyle: "italic", marginBottom: 8 },
+  appealTime: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11, marginBottom: 10 },
+  reviewAppealBtn: { backgroundColor: COLORS.accent + "22", borderRadius: 10, padding: 10, alignItems: "center", borderWidth: 1, borderColor: COLORS.accent + "44" },
+  reviewAppealBtnText: { color: COLORS.accentSoft, fontFamily: "Nunito_700Bold", fontSize: 13 },
+  appealReviewNote: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, fontStyle: "italic", marginTop: 6 },
 
-    actionItem: { flexDirection: "row", gap: 12, backgroundColor: "#1A1330", borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: "#2D2450" },
-    actionDot: { width: 10, height: 10, borderRadius: 5, marginTop: 4, flexShrink: 0 },
-    actionInfo: { flex: 1 },
-    actionTypeRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-    actionType: { color: "#EDE8F5", fontFamily: "Nunito_700Bold", fontSize: 14 },
-    actionAdmin: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12 },
-    actionReason: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12, fontStyle: "italic", marginTop: 2 },
-    actionTime: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11, marginTop: 4 },
+  actionItem: { flexDirection: "row", gap: 12, backgroundColor: COLORS.card, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: COLORS.border },
+  actionDot: { width: 10, height: 10, borderRadius: 5, marginTop: 4, flexShrink: 0 },
+  actionInfo: { flex: 1 },
+  actionTypeRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
+  actionType: { color: COLORS.text, fontFamily: "Nunito_700Bold", fontSize: 14 },
+  actionAdmin: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12 },
+  actionReason: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, fontStyle: "italic", marginTop: 2 },
+  actionTime: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11, marginTop: 4 },
 
-    empty: { alignItems: "center", paddingTop: 60 },
-    emptyIconWrap: { width: 80, height: 80, borderRadius: 40, backgroundColor: "#1A1330", borderWidth: 1, borderColor: "#2D2450", justifyContent: "center", alignItems: "center", marginBottom: 14 },
-    emptyTitle: { color: "#EDE8F5", fontFamily: "DMSerifDisplay_400Regular", fontSize: 22, marginBottom: 8 },
-    emptyText: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 14 },
+  empty: { alignItems: "center", paddingTop: 60 },
+  emptyIconWrap: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border, justifyContent: "center", alignItems: "center", marginBottom: 14 },
+  emptyTitle: { color: COLORS.text, fontFamily: "DMSerifDisplay_400Regular", fontSize: 22, marginBottom: 8 },
+  emptyText: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 14 },
 
-    modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.78)", justifyContent: "center", alignItems: "center", padding: 24 },
-    lookupScroll: { flexGrow: 1, justifyContent: "center", padding: 24 },
-    modalCard: { backgroundColor: "#1A1330", borderRadius: 24, padding: 24, width: "100%", maxWidth: 360, alignItems: "center", borderWidth: 1, borderColor: "#2D2450" },
-    modalIconWrap: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#0F0A1E", borderWidth: 1, borderColor: "#2D2450", justifyContent: "center", alignItems: "center", marginBottom: 12 },
-    modalTitle: { color: "#EDE8F5", fontFamily: "DMSerifDisplay_400Regular", fontSize: 22, marginBottom: 8, textAlign: "center" },
-    modalDesc: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 13, textAlign: "center", lineHeight: 20, marginBottom: 16 },
-    strikeWarning: { borderRadius: 10, padding: 10, borderWidth: 1, width: "100%", marginBottom: 12 },
-    strikeWarningText: { fontFamily: "Nunito_600SemiBold", fontSize: 13, flex: 1 },
-    modalPostPreview: { backgroundColor: "#0F0A1E", borderRadius: 12, padding: 12, width: "100%", marginBottom: 12, borderLeftWidth: 3, borderLeftColor: "#D4607A" },
-    modalPostText: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 13, fontStyle: "italic", lineHeight: 20 },
-    modalPostBy: { color: "#C4A3E8", fontFamily: "Nunito_600SemiBold", fontSize: 12, marginTop: 4 },
-    reasonInput: { backgroundColor: "#0F0A1E", borderRadius: 12, borderWidth: 1, borderColor: "#2D2450", padding: 12, color: "#EDE8F5", fontFamily: "Nunito_400Regular", fontSize: 14, width: "100%", minHeight: 80, marginBottom: 16, textAlignVertical: "top" },
-    modalActions: { flexDirection: "row", gap: 8, width: "100%" },
-    modalCancelBtn: { flex: 1, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: "#2D2450", alignItems: "center" },
-    modalCancelText: { color: "#8B7FA8", fontFamily: "Nunito_600SemiBold", fontSize: 14 },
-    modalDeleteBtn: { flex: 1, padding: 14, borderRadius: 14, backgroundColor: "#D4607A", alignItems: "center", justifyContent: "center" },
-    modalDeleteText: { color: "#fff", fontFamily: "Nunito_700Bold", fontSize: 14 },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.78)", justifyContent: "center", alignItems: "center", padding: 24 },
+  lookupScroll: { flexGrow: 1, justifyContent: "center", padding: 24 },
+  modalCard: { backgroundColor: COLORS.card, borderRadius: 24, padding: 24, width: "100%", maxWidth: 360, alignItems: "center", borderWidth: 1, borderColor: COLORS.border },
+  modalIconWrap: { width: 72, height: 72, borderRadius: 36, backgroundColor: COLORS.bg, borderWidth: 1, borderColor: COLORS.border, justifyContent: "center", alignItems: "center", marginBottom: 12 },
+  modalTitle: { color: COLORS.text, fontFamily: "DMSerifDisplay_400Regular", fontSize: 22, marginBottom: 8, textAlign: "center" },
+  modalDesc: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 13, textAlign: "center", lineHeight: 20, marginBottom: 16 },
+  strikeWarning: { borderRadius: 10, padding: 10, borderWidth: 1, width: "100%", marginBottom: 12 },
+  strikeWarningText: { fontFamily: "Nunito_600SemiBold", fontSize: 13, flex: 1 },
+  modalPostPreview: { backgroundColor: COLORS.bg, borderRadius: 12, padding: 12, width: "100%", marginBottom: 12, borderLeftWidth: 3, borderLeftColor: COLORS.error },
+  modalPostText: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 13, fontStyle: "italic", lineHeight: 20 },
+  modalPostBy: { color: COLORS.accentSoft, fontFamily: "Nunito_600SemiBold", fontSize: 12, marginTop: 4 },
+  reasonInput: { backgroundColor: COLORS.bg, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, padding: 12, color: COLORS.text, fontFamily: "Nunito_400Regular", fontSize: 14, width: "100%", minHeight: 80, marginBottom: 16, textAlignVertical: "top" },
+  modalActions: { flexDirection: "row", gap: 8, width: "100%" },
+  modalCancelBtn: { flex: 1, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, alignItems: "center" },
+  modalCancelText: { color: COLORS.textMuted, fontFamily: "Nunito_600SemiBold", fontSize: 14 },
+  modalDeleteBtn: { flex: 1, padding: 14, borderRadius: 14, backgroundColor: COLORS.error, alignItems: "center", justifyContent: "center" },
+  modalDeleteText: { color: "#fff", fontFamily: "Nunito_700Bold", fontSize: 14 },
 
-    unbanUserCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#0F0A1E", borderRadius: 14, padding: 14, width: "100%", marginBottom: 14, borderWidth: 1, borderColor: "#2D2450" },
-    unbanUserAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#D4607A" + "22", justifyContent: "center", alignItems: "center" },
-    unbanUserAvatarText: { color: "#D4607A", fontFamily: "Nunito_700Bold", fontSize: 18 },
-    unbanUserName: { color: "#EDE8F5", fontFamily: "Nunito_700Bold", fontSize: 15, marginBottom: 2 },
-    unbanUserMeta: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12 },
-    resetToggle: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: "#2D2450", width: "100%", marginBottom: 16, backgroundColor: "#0F0A1E" },
-    resetToggleActive: { borderColor: "#4CAF8F" + "66", backgroundColor: "#4CAF8F" + "0D" },
-    toggleDot: { width: 18, height: 18, borderRadius: 9, backgroundColor: "#2D2450" },
-    toggleDotActive: { backgroundColor: "#4CAF8F" },
-    resetToggleText: { color: "#8B7FA8", fontFamily: "Nunito_500Medium", fontSize: 13, flex: 1 },
+  unbanUserCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: COLORS.bg, borderRadius: 14, padding: 14, width: "100%", marginBottom: 14, borderWidth: 1, borderColor: COLORS.border },
+  unbanUserAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.error + "22", justifyContent: "center", alignItems: "center" },
+  unbanUserAvatarText: { color: COLORS.error, fontFamily: "Nunito_700Bold", fontSize: 18 },
+  unbanUserName: { color: COLORS.text, fontFamily: "Nunito_700Bold", fontSize: 15, marginBottom: 2 },
+  unbanUserMeta: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12 },
+  resetToggle: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, width: "100%", marginBottom: 16, backgroundColor: COLORS.bg },
+  resetToggleActive: { borderColor: COLORS.success + "66", backgroundColor: COLORS.success + "0D" },
+  toggleDot: { width: 18, height: 18, borderRadius: 9, backgroundColor: COLORS.border },
+  toggleDotActive: { backgroundColor: COLORS.success },
+  resetToggleText: { color: COLORS.textMuted, fontFamily: "Nunito_500Medium", fontSize: 13, flex: 1 },
 
-    lookupRow: { flexDirection: "row", gap: 8, width: "100%", marginBottom: 14 },
-    lookupSearchBtn: { backgroundColor: "#9B6FD4", borderRadius: 10, paddingHorizontal: 16, justifyContent: "center" },
-    lookupSearchText: { color: "#fff", fontFamily: "Nunito_700Bold", fontSize: 14 },
-    userInfoBox: { backgroundColor: "#0F0A1E", borderRadius: 14, padding: 14, width: "100%", marginBottom: 14, borderWidth: 1, borderColor: "#2D2450" },
-    userInfoHeader: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
-    userStatusBadge: { fontFamily: "Nunito_600SemiBold", fontSize: 13 },
-    userInfoStats: { flexDirection: "row", gap: 16, marginBottom: 12 },
-    userInfoStat: { alignItems: "center" },
-    userInfoStatNum: { fontFamily: "DMSerifDisplay_400Regular", fontSize: 22 },
-    userInfoStatLabel: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11 },
-    activitySection: { borderTopWidth: 1, borderTopColor: "#2D2450", paddingTop: 12, marginBottom: 12 },
-    activityTitle: { color: "#EDE8F5", fontFamily: "Nunito_700Bold", fontSize: 12, marginBottom: 8, letterSpacing: 0.3 },
-    activityItem: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-    activityDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
-    activityText: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12, flex: 1 },
-    activityTime: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11 },
-    noActivityText: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12, fontStyle: "italic" },
+  lookupRow: { flexDirection: "row", gap: 8, width: "100%", marginBottom: 14 },
+  lookupSearchBtn: { backgroundColor: COLORS.accent, borderRadius: 10, paddingHorizontal: 16, justifyContent: "center" },
+  lookupSearchText: { color: "#fff", fontFamily: "Nunito_700Bold", fontSize: 14 },
+  userInfoBox: { backgroundColor: COLORS.bg, borderRadius: 14, padding: 14, width: "100%", marginBottom: 14, borderWidth: 1, borderColor: COLORS.border },
+  userInfoHeader: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
+  userStatusBadge: { fontFamily: "Nunito_600SemiBold", fontSize: 13 },
+  userInfoStats: { flexDirection: "row", gap: 16, marginBottom: 12 },
+  userInfoStat: { alignItems: "center" },
+  userInfoStatNum: { fontFamily: "DMSerifDisplay_400Regular", fontSize: 22 },
+  userInfoStatLabel: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11 },
+  activitySection: { borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12, marginBottom: 12 },
+  activityTitle: { color: COLORS.text, fontFamily: "Nunito_700Bold", fontSize: 12, marginBottom: 8, letterSpacing: 0.3 },
+  activityItem: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+  activityDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
+  activityText: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, flex: 1 },
+  activityTime: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11 },
+  noActivityText: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, fontStyle: "italic" },
 
-    appealReviewCard: { backgroundColor: "#0F0A1E", borderRadius: 12, padding: 14, width: "100%", marginBottom: 8, borderWidth: 1, borderColor: "#2D2450" },
-    appealReviewPseudonym: { color: "#C4A3E8", fontFamily: "Nunito_700Bold", fontSize: 13, marginBottom: 6 },
-    appealReviewMessage: { color: "#EDE8F5", fontFamily: "Nunito_400Regular", fontSize: 13, lineHeight: 20, fontStyle: "italic", marginBottom: 6 },
-    appealReviewTime: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11 },
-    appealViolationsBox: { backgroundColor: "#0F0A1E", borderRadius: 10, padding: 12, width: "100%", marginBottom: 4, borderWidth: 1, borderColor: "#D4607A" + "33" },
-    appealViolationsTitle: { color: "#D4607A", fontFamily: "Nunito_600SemiBold", fontSize: 12, marginBottom: 6 },
-    appealViolationItem: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 12, lineHeight: 20 },
-    });
-
+  appealReviewCard: { backgroundColor: COLORS.bg, borderRadius: 12, padding: 14, width: "100%", marginBottom: 8, borderWidth: 1, borderColor: COLORS.border },
+  appealReviewPseudonym: { color: COLORS.accentSoft, fontFamily: "Nunito_700Bold", fontSize: 13, marginBottom: 6 },
+  appealReviewMessage: { color: COLORS.text, fontFamily: "Nunito_400Regular", fontSize: 13, lineHeight: 20, fontStyle: "italic", marginBottom: 6 },
+  appealReviewTime: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11 },
+  appealViolationsBox: { backgroundColor: COLORS.bg, borderRadius: 10, padding: 12, width: "100%", marginBottom: 4, borderWidth: 1, borderColor: COLORS.error + "33" },
+  appealViolationsTitle: { color: COLORS.error, fontFamily: "Nunito_600SemiBold", fontSize: 12, marginBottom: 6 },
+  appealViolationItem: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, lineHeight: 20 },
+});

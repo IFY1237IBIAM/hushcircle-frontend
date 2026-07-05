@@ -5,16 +5,17 @@ import {
 } from "react-native";
 import Svg, { Path, Circle, Line, Polyline, Rect, G } from "react-native-svg";
 import { useAuth } from "../context/AuthContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";import { useTheme } from "../context/ThemeContext";
-
-// Module-level color fallbacks for icon defaults (theme-aware colors used inside component)
-const DARK = {
-  textMuted: "#8B7FA8",
-};
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
+const COLORS = {
+  bg: "#0F0A1E", card: "#1A1330", border: "#2D2450",
+  accent: "#9B6FD4", accentSoft: "#C4A3E8",
+  text: "#EDE8F5", textMuted: "#8B7FA8",
+  error: "#D4607A", success: "#4CAF8F",
+  warning: "#D4A44C",
+};
 
 // ── Slide Hero Icons ───────────────────────────────────────────────────────
 
@@ -193,7 +194,7 @@ const BulletBlockIcon = ({ size = 15, color = "#D4607A" }) => (
 
 // ── Nav / UI icons ─────────────────────────────────────────────────────────
 
-const ArrowLeftIcon = ({ size = 16, color = DARK.textMuted }) => (
+const ArrowLeftIcon = ({ size = 16, color = COLORS.textMuted }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Line x1="19" y1="12" x2="5" y2="12" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     <Polyline points="12 19 5 12 12 5" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -318,7 +319,6 @@ const SLIDES = [
 // ──────────────────────────────────────────────────────────────────────────
 
 export default function OnboardingScreen({ onComplete }) {
-  const { colors: COLORS } = useTheme();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [agreed, setAgreed] = useState(false);
   const scrollRef = useRef(null);
@@ -494,108 +494,58 @@ export default function OnboardingScreen({ onComplete }) {
   );
 }
 
-
-  const styles = StyleSheet.create({
-
-  container: { flex: 1, backgroundColor: "#0F0A1E" },
-
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.bg },
   dotsContainer: { flexDirection: "row", justifyContent: "center", gap: 6, paddingTop: 56, paddingBottom: 8 },
-
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#2D2450" },
-
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.border },
 
   scroll: { padding: 24, paddingBottom: 40 },
 
-
   // Slide hero
-
   iconWrap: { width: 90, height: 90, borderRadius: 28, justifyContent: "center", alignItems: "center", alignSelf: "center", marginBottom: 24, marginTop: 8 },
 
-
-  title: { color: "#EDE8F5", fontFamily: "DMSerifDisplay_400Regular", fontSize: 30, textAlign: "center", marginBottom: 8 },
-
+  title: { color: COLORS.text, fontFamily: "DMSerifDisplay_400Regular", fontSize: 30, textAlign: "center", marginBottom: 8 },
   subtitle: { fontFamily: "Nunito_500Medium", fontSize: 14, textAlign: "center", marginBottom: 24 },
-
-  content: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 15, lineHeight: 26, textAlign: "center", marginBottom: 24 },
-
+  content: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 15, lineHeight: 26, textAlign: "center", marginBottom: 24 },
 
   // Points
-
   pointsContainer: { gap: 10, marginBottom: 24 },
-
   pointRow: {
-
-  flexDirection: "row", alignItems: "center", gap: 12,
-
-  borderLeftWidth: 3, paddingLeft: 14, paddingVertical: 10,
-
-  backgroundColor: "#1A1330", borderRadius: 10,
-
-  borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
-
+    flexDirection: "row", alignItems: "center", gap: 12,
+    borderLeftWidth: 3, paddingLeft: 14, paddingVertical: 10,
+    backgroundColor: COLORS.card, borderRadius: 10,
+    borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
   },
-
   pointIconWrap: { width: 22, alignItems: "center", flexShrink: 0 },
-
-  pointText: { color: "#EDE8F5", fontFamily: "Nunito_400Regular", fontSize: 14, lineHeight: 22, flex: 1 },
-
+  pointText: { color: COLORS.text, fontFamily: "Nunito_400Regular", fontSize: 14, lineHeight: 22, flex: 1 },
 
   // Agreement
-
   agreementSection: { gap: 16, marginTop: 8 },
-
   checkRow: {
-
-  flexDirection: "row", gap: 12, alignItems: "flex-start",
-
-  backgroundColor: "#1A1330", borderRadius: 14, padding: 16,
-
-  borderWidth: 1, borderColor: "#2D2450",
-
+    flexDirection: "row", gap: 12, alignItems: "flex-start",
+    backgroundColor: COLORS.card, borderRadius: 14, padding: 16,
+    borderWidth: 1, borderColor: COLORS.border,
   },
-
   checkbox: {
-
-  width: 24, height: 24, borderRadius: 7, borderWidth: 2,
-
-  borderColor: "#2D2450", justifyContent: "center", alignItems: "center",
-
-  flexShrink: 0, marginTop: 1,
-
+    width: 24, height: 24, borderRadius: 7, borderWidth: 2,
+    borderColor: COLORS.border, justifyContent: "center", alignItems: "center",
+    flexShrink: 0, marginTop: 1,
   },
-
-  checkText: { color: "#EDE8F5", fontFamily: "Nunito_400Regular", fontSize: 13, lineHeight: 20, flex: 1 },
-
+  checkText: { color: COLORS.text, fontFamily: "Nunito_400Regular", fontSize: 13, lineHeight: 20, flex: 1 },
   enterBtn: { borderRadius: 16, padding: 18, alignItems: "center" },
-
   enterBtnInner: { flexDirection: "row", alignItems: "center", gap: 8 },
-
   enterBtnText: { color: "#fff", fontFamily: "Nunito_600SemiBold", fontSize: 16 },
-
-  legalNote: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11, textAlign: "center", lineHeight: 17 },
-
+  legalNote: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11, textAlign: "center", lineHeight: 17 },
 
   // Nav
-
   navRow: {
-
-  flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-
-  padding: 20, borderTopWidth: 1, borderTopColor: "#2D2450",
-
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    padding: 20, borderTopWidth: 1, borderTopColor: COLORS.border,
   },
-
-  navBtn: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 10, borderWidth: 1, borderColor: "#2D2450" },
-
+  navBtn: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border },
   navBtnInner: { flexDirection: "row", alignItems: "center", gap: 6 },
-
-  navBtnText: { color: "#8B7FA8", fontFamily: "Nunito_500Medium", fontSize: 14 },
-
-  slideCount: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 13 },
-
+  navBtnText: { color: COLORS.textMuted, fontFamily: "Nunito_500Medium", fontSize: 14 },
+  slideCount: { color: COLORS.textMuted, fontFamily: "Nunito_400Regular", fontSize: 13 },
   navBtnPrimary: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10 },
-
   navBtnPrimaryText: { color: "#fff", fontFamily: "Nunito_600SemiBold", fontSize: 14 },
-
-  });
-
+});

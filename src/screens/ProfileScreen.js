@@ -1,173 +1,134 @@
 import { useState, useCallback, useRef } from "react";
 import {
-  View, Text, StyleSheet, TouchableOpacity,
+  View, Text, TouchableOpacity,
   FlatList, ActivityIndicator, RefreshControl,
   Alert, Switch, Modal, TextInput,
 } from "react-native";
-import Svg, { Path, Circle, Line, Polyline, Rect, G } from "react-native-svg";
 import { useFocusEffect } from "@react-navigation/native";
+import Svg, { Path, Circle, Polyline, Rect } from "react-native-svg";
 import { useAuth } from "../context/AuthContext";
 import { useNetwork } from "../context/NetworkContext";
-import api from "../api/api";
+import { useTheme } from "../context/ThemeContext";
+import api from "../api";
 import PostCard from "../components/PostCard";
 import OnlineDot from "../components/OnlineDot";
 import NoNetworkOverlay from "../components/NoNetworkOverlay";
 import HushCircleSpinner from "../components/HushCircleSpinner";
 import { useNavigation } from "@react-navigation/native";
-import useSpinner from "../hooks/useSpinner";import { useTheme } from "../context/ThemeContext";
-
-// Module-level color fallbacks for icon defaults (theme-aware colors used inside component)
-const DARK = {
-  accent: "#9B6FD4",
-  accentSoft: "#C4A3E8",
-  text: "#EDE8F5",
-  error: "#D4607A",
-  success: "#4CAF8F",
-};
-
-
+import useSpinner from "../hooks/useSpinner";
 
 const AVATAR_COLORS = [
-  "#9B6FD4", "#D4607A", "#6B9FD4",
-  "#4CAF8F", "#D4A44C", "#E879F9",
+  "#9B6FD4","#D4607A","#6B9FD4","#4CAF8F","#D4A44C","#E879F9",
 ];
 
-// ── SVG Icon Components ────────────────────────────────────────────────────
+// ── SVG Icons ─────────────────────────────────────────────────────────────────
 
-const SettingsIcon = ({ size = 22, color = DARK.text }) => (
+const SettingsIcon = ({ size = 20, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
+    <Circle cx="12" cy="12" r="3" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const EditIcon = ({ size = 14, color = DARK.accentSoft }) => (
+const PencilIcon = ({ size = 13, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
+    <Path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const ShieldIcon = ({ size = 20, color = DARK.accentSoft }) => (
+const LockIcon = ({ size = 14, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
+    <Rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M7 11V7a5 5 0 0 1 10 0v4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const LockIcon = ({ size = 20, color = DARK.accent }) => (
+const EyeIcon = ({ size = 20, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Rect x="3" y="11" width="18" height="11" rx="2" ry="2"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M7 11V7a5 5 0 0 1 10 0v4"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
+    <Path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Circle cx="12" cy="12" r="3" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const EyeIcon = ({ size = 20, color = DARK.success }) => (
+const EyeOffIcon = ({ size = 20, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Circle cx="12" cy="12" r="3"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
+    <Path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M1 1l22 22" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const EyeOffIcon = ({ size = 20, color = DARK.error }) => (
+const ShieldIcon = ({ size = 14, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Line x1="1" y1="1" x2="23" y2="23"
-      stroke={color} strokeWidth={2} strokeLinecap="round"
-    />
+    <Path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const PostIcon = ({ size = 16, color = DARK.text }) => (
+const FileEditIcon = ({ size = 44, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M12 20h9"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
+    <Path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    <Polyline points="14 2 14 8 20 8" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M12 18v-4" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+    <Path d="M10 16h4" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
   </Svg>
 );
 
-const BookmarkIcon = ({ size = 16, color = DARK.text }) => (
+const BookmarkIcon = ({ size = 44, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
-      stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-    />
+    <Path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const CheckIcon = ({ size = 16, color = DARK.success }) => (
+const GridIcon = ({ size = 14, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Polyline points="20 6 9 17 4 12"
-      stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
-    />
+    <Rect x="3" y="3" width="7" height="7" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Rect x="14" y="3" width="7" height="7" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Rect x="3" y="14" width="7" height="7" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Rect x="14" y="14" width="7" height="7" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-// ──────────────────────────────────────────────────────────────────────────────
+const HeartIcon = ({ size = 14, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+const MessageIcon = ({ size = 14, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 0 2 2z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+// ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
-  const { colors: COLORS } = useTheme();
   const { user, logout, updateUser } = useAuth();
   const { isConnected } = useNetwork();
+  const { colors: C } = useTheme();                      // ← live theme colors
   const spinner = useSpinner();
-  const [activeTab, setActiveTab] = useState("posts");
   const navigation = useNavigation();
-  const [stats, setStats] = useState(null);
-  const [myPosts, setMyPosts] = useState([]);
-  const [savedPosts, setSavedPosts] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [showNoNetwork, setShowNoNetwork] = useState(false);
+
+  const [activeTab, setActiveTab]           = useState("posts");
+  const [stats, setStats]                   = useState(null);
+  const [myPosts, setMyPosts]               = useState([]);
+  const [savedPosts, setSavedPosts]         = useState([]);
+  const [refreshing, setRefreshing]         = useState(false);
+  const [showNoNetwork, setShowNoNetwork]   = useState(false);
   const [togglingStatus, setTogglingStatus] = useState(false);
-  const [showBioModal, setShowBioModal] = useState(false);
-  const [bioText, setBioText] = useState(user?.bio || "");
-  const [savingBio, setSavingBio] = useState(false);
-  const [savedCount, setSavedCount] = useState(0);
-  const [showOnlineStatus, setShowOnlineStatus] = useState(
-    user?.showOnlineStatus !== false
-  );
+  const [showBioModal, setShowBioModal]     = useState(false);
+  const [bioText, setBioText]               = useState(user?.bio || "");
+  const [savingBio, setSavingBio]           = useState(false);
+  const [savedCount, setSavedCount]         = useState(0);
+  const [showOnlineStatus, setShowOnlineStatus] = useState(user?.showOnlineStatus !== false);
   const dataLoaded = useRef(false);
 
-  const avatarColor = AVATAR_COLORS[
-    (user?.pseudonym?.charCodeAt(0) || 0) % AVATAR_COLORS.length
-  ];
+  const avatarColor = AVATAR_COLORS[(user?.pseudonym?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
   const fetchAll = async (silent = false) => {
-    if (!isConnected) {
-      setShowNoNetwork(true);
-      return;
-    }
+    if (!isConnected) { setShowNoNetwork(true); return; }
     try {
       const [statsRes, postsRes, savedRes] = await Promise.all([
         api.get("/auth/stats"),
@@ -181,7 +142,6 @@ export default function ProfileScreen() {
       setShowNoNetwork(false);
       dataLoaded.current = true;
     } catch (error) {
-      console.log("Profile fetch error:", error.message);
       if (error.message === "Network Error") setShowNoNetwork(true);
     }
   };
@@ -196,11 +156,7 @@ export default function ProfileScreen() {
     }, [isConnected])
   );
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchAll();
-    setRefreshing(false);
-  };
+  const handleRefresh = async () => { setRefreshing(true); await fetchAll(); setRefreshing(false); };
 
   const handleToggleOnlineStatus = async () => {
     if (!isConnected) { setShowNoNetwork(true); return; }
@@ -210,21 +166,11 @@ export default function ProfileScreen() {
         const newValue = res.data.showOnlineStatus;
         setShowOnlineStatus(newValue);
         updateUser({ showOnlineStatus: newValue });
-        Alert.alert(
-          newValue ? "Status visible 💜" : "Status hidden",
-          res.data.message
-        );
+        Alert.alert(newValue ? "Status visible" : "Status hidden", res.data.message);
       } catch {
         Alert.alert("Error", "Could not update your privacy setting.");
       }
     }, "Updating privacy...");
-  };
-
-  const handleLogout = () => {
-    Alert.alert("Leave safely?", "You can always come back 💜", [
-      { text: "Stay", style: "cancel" },
-      { text: "Leave", style: "destructive", onPress: logout },
-    ]);
   };
 
   const handleDeleted = (deletedId) => {
@@ -246,120 +192,110 @@ export default function ProfileScreen() {
       await api.put("/auth/bio", { bio: bioText.trim() });
       updateUser({ bio: bioText.trim() });
       setShowBioModal(false);
-      Alert.alert("Updated 💜", "Bio saved.");
+      Alert.alert("Updated", "Bio saved.");
     } catch (e) {
       Alert.alert("Error", e.response?.data?.message || "Could not save bio.");
-    } finally {
-      setSavingBio(false);
-    }
+    } finally { setSavingBio(false); }
   };
 
+  // ── List Header ─────────────────────────────────────────────────────────────
   const ListHeader = () => (
     <View>
-      {/* ── Header actions row ── */}
-      <View style={styles.profileHeaderRow}>
-        <View style={{ flex: 1 }} />
+      {/* Settings button */}
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", marginBottom: 8 }}>
         <TouchableOpacity
-          style={styles.settingsBtn}
+          style={{ padding: 8, borderRadius: 12, backgroundColor: C.card, borderWidth: 1, borderColor: C.border }}
           onPress={() => navigation.navigate("Settings")}
         >
-          <SettingsIcon size={20} color={COLORS.text} />
+          <SettingsIcon size={20} color={C.text} />
         </TouchableOpacity>
       </View>
 
-      {/* ── Profile header ── */}
-      <View style={styles.profileHeader}>
+      {/* Avatar + name */}
+      <View style={{ alignItems: "center", marginBottom: 24 }}>
         <View style={{ position: "relative", marginBottom: 14 }}>
-          <View style={[styles.avatar, { backgroundColor: avatarColor + "33", borderColor: avatarColor }]}>
-            <Text style={[styles.avatarText, { color: avatarColor }]}>
+          <View style={{ width: 88, height: 88, borderRadius: 44, justifyContent: "center", alignItems: "center", borderWidth: 2, backgroundColor: avatarColor + "33", borderColor: avatarColor }}>
+            <Text style={{ fontSize: 40, fontFamily: "DMSerifDisplay_400Regular", color: avatarColor }}>
               {user?.pseudonym?.[0]?.toUpperCase()}
             </Text>
           </View>
-          <OnlineDot
-            isOnline={true}
-            showOnlineStatus={showOnlineStatus}
-            size={18}
-            borderColor={COLORS.bg}
-          />
+          <OnlineDot isOnline={true} showOnlineStatus={showOnlineStatus} size={18} borderColor={C.bg} />
         </View>
 
-        <Text style={styles.pseudonym}>{user?.pseudonym}</Text>
+        <Text style={{ fontSize: 28, color: C.text, fontFamily: "DMSerifDisplay_400Regular", marginBottom: 8 }}>
+          {user?.pseudonym}
+        </Text>
 
         {/* Bio row */}
         <TouchableOpacity
-          style={styles.bioRow}
+          style={{ marginTop: 8, marginBottom: 4, paddingHorizontal: 16, paddingVertical: 8, alignSelf: "stretch" }}
           onPress={() => { setBioText(user?.bio || ""); setShowBioModal(true); }}
           activeOpacity={0.75}
         >
-          <View style={styles.bioInner}>
-            {user?.bio ? (
-              <Text style={styles.bioText}>{user.bio}</Text>
-            ) : (
-              <Text style={styles.bioPlaceholder}>Add a bio...</Text>
-            )}
-            <View style={styles.bioPencilWrap}>
-              <EditIcon size={13} color={COLORS.accentSoft} />
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: C.card, borderRadius: 12, borderWidth: 1, borderColor: C.border, paddingHorizontal: 14, paddingVertical: 10, gap: 8 }}>
+            {user?.bio
+              ? <Text style={{ flex: 1, color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 13, textAlign: "center", lineHeight: 20 }}>{user.bio}</Text>
+              : <Text style={{ flex: 1, color: C.accent + "88", fontFamily: "Nunito_400Regular", fontSize: 13, textAlign: "center", fontStyle: "italic" }}>Add a bio...</Text>
+            }
+            <View style={{ width: 24, height: 24, justifyContent: "center", alignItems: "center" }}>
+              <PencilIcon size={13} color={C.accentSoft} />
             </View>
           </View>
         </TouchableOpacity>
 
         {/* Anonymous badge */}
-        <View style={styles.anonBadge}>
-          <LockIcon size={12} color={COLORS.accentSoft} />
-          <Text style={styles.anonBadgeText}>Anonymous identity</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: C.accent + "22", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5, borderWidth: 1, borderColor: C.accent + "44", marginBottom: 6 }}>
+          <LockIcon size={12} color={C.accentSoft} />
+          <Text style={{ color: C.accentSoft, fontFamily: "Nunito_500Medium", fontSize: 12 }}>Anonymous identity</Text>
         </View>
 
-        {joinDate ? <Text style={styles.joinDate}>Member since {joinDate}</Text> : null}
+        {joinDate ? <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12 }}>Member since {joinDate}</Text> : null}
       </View>
 
-      {/* ── Stats ── */}
+      {/* Stats */}
       {stats ? (
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, { color: COLORS.accent }]}>{stats.totalPosts}</Text>
-            <Text style={styles.statLabel}>Posts</Text>
+        <View style={{ flexDirection: "row", backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, marginBottom: 16, padding: 16 }}>
+          <View style={{ flex: 1, alignItems: "center", gap: 3 }}>
+            <GridIcon size={13} color={C.accent} />
+            <Text style={{ fontSize: 26, fontFamily: "DMSerifDisplay_400Regular", color: C.accent, marginBottom: 2 }}>{stats.totalPosts}</Text>
+            <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12 }}>Posts</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, { color: "#D4607A" }]}>{stats.totalReactions}</Text>
-            <Text style={styles.statLabel}>Reactions</Text>
+          <View style={{ width: 1, backgroundColor: C.border, marginHorizontal: 8 }} />
+          <View style={{ flex: 1, alignItems: "center", gap: 3 }}>
+            <HeartIcon size={13} color={C.error} />
+            <Text style={{ fontSize: 26, fontFamily: "DMSerifDisplay_400Regular", color: C.error, marginBottom: 2 }}>{stats.totalReactions}</Text>
+            <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12 }}>Reactions</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, { color: "#4CAF8F" }]}>{stats.totalComments}</Text>
-            <Text style={styles.statLabel}>Comments</Text>
+          <View style={{ width: 1, backgroundColor: C.border, marginHorizontal: 8 }} />
+          <View style={{ flex: 1, alignItems: "center", gap: 3 }}>
+            <MessageIcon size={13} color={C.success} />
+            <Text style={{ fontSize: 26, fontFamily: "DMSerifDisplay_400Regular", color: C.success, marginBottom: 2 }}>{stats.totalComments}</Text>
+            <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12 }}>Comments</Text>
           </View>
         </View>
       ) : (
-        <View style={styles.statsPlaceholder}>
-          <ActivityIndicator color={COLORS.accent} size="small" />
+        <View style={{ backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, marginBottom: 16, padding: 24, alignItems: "center" }}>
+          <ActivityIndicator color={C.accent} size="small" />
         </View>
       )}
 
-      {/* ── Privacy settings ── */}
-      <View style={styles.privacySection}>
-        <View style={styles.privacySectionTitleRow}>
-          <ShieldIcon size={14} color={COLORS.textMuted} />
-          <Text style={styles.privacySectionTitle}>Privacy & Safety</Text>
-        </View>
-
-        <View style={styles.settingRow}>
-          <View style={styles.settingLeft}>
-            <View style={[
-              styles.settingIconWrap,
-              { backgroundColor: showOnlineStatus ? "#4CAF8F22" : "#D4607A22" }
-            ]}>
+      {/* Privacy section */}
+      <View style={{ backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, marginBottom: 16, overflow: "hidden" }}>
+        <Text style={{ color: C.textMuted, fontFamily: "Nunito_500Medium", fontSize: 11, letterSpacing: 0.5, padding: 14, paddingBottom: 8, textTransform: "uppercase" }}>
+          Privacy & Safety
+        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 14, borderTopWidth: 1, borderTopColor: C.border }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1, marginRight: 12 }}>
+            <View style={{ width: 40, height: 40, borderRadius: 12, justifyContent: "center", alignItems: "center", backgroundColor: showOnlineStatus ? C.success + "22" : C.error + "22" }}>
               {showOnlineStatus
-                ? <EyeIcon size={18} color={COLORS.success} />
-                : <EyeOffIcon size={18} color={COLORS.error} />
+                ? <EyeIcon size={20} color={C.success} />
+                : <EyeOffIcon size={20} color={C.error} />
               }
             </View>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Online status</Text>
-              <Text style={styles.settingDesc}>
-                {showOnlineStatus
-                  ? "Others can see when you're active"
-                  : "Your online status is hidden from everyone"}
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: C.text, fontFamily: "Nunito_500Medium", fontSize: 14, marginBottom: 2 }}>Online status</Text>
+              <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, lineHeight: 16 }}>
+                {showOnlineStatus ? "Others can see when you're active" : "Your online status is hidden from everyone"}
               </Text>
             </View>
           </View>
@@ -367,25 +303,23 @@ export default function ProfileScreen() {
             value={showOnlineStatus}
             onValueChange={handleToggleOnlineStatus}
             disabled={togglingStatus}
-            trackColor={{ false: "#2D2450", true: "#4CAF8F44" }}
-            thumbColor={showOnlineStatus ? "#4CAF8F" : "#8B7FA8"}
-            ios_backgroundColor="#2D2450"
+            trackColor={{ false: C.border, true: C.success + "44" }}
+            thumbColor={showOnlineStatus ? C.success : C.textMuted}
+            ios_backgroundColor={C.border}
           />
         </View>
-
-        {/* Status preview */}
-        <View style={[styles.statusPreview, { borderColor: showOnlineStatus ? "#4CAF8F44" : COLORS.border }]}>
+        <View style={{ margin: 14, marginTop: 4, borderRadius: 12, padding: 12, borderWidth: 1, backgroundColor: C.inputBg, borderColor: showOnlineStatus ? C.success + "44" : C.border }}>
           {showOnlineStatus ? (
-            <View style={styles.statusPreviewRow}>
-              <View style={styles.statusPreviewDot} />
-              <Text style={[styles.statusPreviewText, { color: "#4CAF8F" }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: C.success }} />
+              <Text style={{ color: C.success, fontFamily: "Nunito_400Regular", fontSize: 12, flex: 1, lineHeight: 18 }}>
                 Others can see you are online right now
               </Text>
             </View>
           ) : (
-            <View style={styles.statusPreviewRow}>
-              <LockIcon size={14} color={COLORS.textMuted} />
-              <Text style={styles.statusPreviewText}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <LockIcon size={14} color={C.textMuted} />
+              <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, flex: 1, lineHeight: 18 }}>
                 Your online status and last seen are hidden from everyone
               </Text>
             </View>
@@ -393,68 +327,68 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* ── Safety note ── */}
-      <View style={styles.safetyBox}>
-        <View style={styles.safetyTitleRow}>
-          <ShieldIcon size={16} color={COLORS.accentSoft} />
-          <Text style={styles.safetyTitle}>You are safe here 💜</Text>
+      {/* Safety note */}
+      <View style={{ backgroundColor: C.accentGlow, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: C.accent + "33", marginBottom: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+          <ShieldIcon size={14} color={C.accentSoft} />
+          <Text style={{ color: C.accentSoft, fontFamily: "Nunito_600SemiBold", fontSize: 14 }}>You are safe here</Text>
         </View>
-        <Text style={styles.safetyText}>
+        <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 12, lineHeight: 18 }}>
           Your real identity is never shared. Only your pseudonym is visible to others.
         </Text>
       </View>
 
-      {/* ── Tab switcher ── */}
-      <View style={styles.tabRow}>
-        <TouchableOpacity
-          style={[styles.tabBtn, activeTab === "posts" && styles.tabBtnActive]}
-          onPress={() => setActiveTab("posts")}
-        >
-          <PostIcon size={15} color={activeTab === "posts" ? "#fff" : COLORS.textMuted} />
-          <Text style={[styles.tabBtnText, activeTab === "posts" && styles.tabBtnTextActive]}>
-            My Posts
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tabBtn, activeTab === "saved" && styles.tabBtnActive]}
-          onPress={() => setActiveTab("saved")}
-        >
-          <BookmarkIcon size={15} color={activeTab === "saved" ? "#fff" : COLORS.textMuted} />
-          <Text style={[styles.tabBtnText, activeTab === "saved" && styles.tabBtnTextActive]}>
-            Saved
-          </Text>
-          {savedCount > 0 && (
-            <View style={styles.tabCountBadge}>
-              <Text style={styles.tabCountBadgeText}>{savedCount > 99 ? "99+" : savedCount}</Text>
+      {/* Tab switcher */}
+      <View style={{ flexDirection: "row", backgroundColor: C.card, borderRadius: 12, padding: 4, marginBottom: 16, borderWidth: 1, borderColor: C.border }}>
+        {[
+          { key: "posts", label: "My Posts",  Icon: GridIcon },
+          { key: "saved", label: "Saved",     Icon: BookmarkIcon },
+        ].map(({ key, label, Icon }) => (
+          <TouchableOpacity
+            key={key}
+            style={{ flex: 1, paddingVertical: 10, alignItems: "center", borderRadius: 10, backgroundColor: activeTab === key ? C.accent : "transparent" }}
+            onPress={() => setActiveTab(key)}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Icon size={14} color={activeTab === key ? "#fff" : C.textMuted} />
+              <Text style={{ color: activeTab === key ? "#fff" : C.textMuted, fontFamily: "Nunito_500Medium", fontSize: 14 }}>
+                {label}
+              </Text>
+              {key === "saved" && savedCount > 0 && (
+                <View style={{ backgroundColor: activeTab === "saved" ? "rgba(255,255,255,0.3)" : C.accent, borderRadius: 10, minWidth: 18, height: 18, justifyContent: "center", alignItems: "center", paddingHorizontal: 5 }}>
+                  <Text style={{ color: "#fff", fontFamily: "Nunito_700Bold", fontSize: 10 }}>{savedCount > 99 ? "99+" : savedCount}</Text>
+                </View>
+              )}
             </View>
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
+        ))}
       </View>
 
+      {/* Empty state */}
       {currentPosts.length === 0 && !spinner.visible && (
-        <View style={styles.empty}>
-          <View style={styles.emptyIconWrap}>
+        <View style={{ alignItems: "center", paddingVertical: 40, paddingHorizontal: 24 }}>
+          <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: C.card, borderWidth: 1, borderColor: C.border, justifyContent: "center", alignItems: "center", marginBottom: 14 }}>
             {activeTab === "posts"
-              ? <PostIcon size={36} color={COLORS.textMuted} />
-              : <BookmarkIcon size={36} color={COLORS.textMuted} />
+              ? <FileEditIcon size={44} color={C.textMuted} />
+              : <BookmarkIcon size={44} color={C.textMuted} />
             }
           </View>
-          <Text style={styles.emptyTitle}>
+          <Text style={{ color: C.text, fontFamily: "DMSerifDisplay_400Regular", fontSize: 22, marginBottom: 8 }}>
             {activeTab === "posts" ? "No posts yet" : "No saved posts"}
           </Text>
-          <Text style={styles.emptyText}>
+          <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 14, textAlign: "center", lineHeight: 22 }}>
             {activeTab === "posts"
-              ? "Share your first story — this is your safe space 💜"
-              : "Save posts that resonate with you and find them here anytime 💜"}
+              ? "Share your first story — this is your safe space"
+              : "Save posts that resonate with you and find them here anytime"}
           </Text>
         </View>
       )}
     </View>
   );
 
+  // ── Main render ─────────────────────────────────────────────────────────────
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
       <FlatList
         data={currentPosts}
         keyExtractor={(item) => item._id}
@@ -464,20 +398,14 @@ export default function ProfileScreen() {
             onDeleted={handleDeleted}
             onHidden={(hiddenId) => setSavedPosts((prev) => prev.filter((p) => p._id !== hiddenId))}
             onEdited={(id, content, mood) =>
-              setMyPosts((prev) =>
-                prev.map((p) => p._id === id ? { ...p, content, mood } : p)
-              )
+              setMyPosts((prev) => prev.map((p) => p._id === id ? { ...p, content, mood } : p))
             }
           />
         )}
         ListHeaderComponent={ListHeader}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ padding: 16, paddingTop: 56 }}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={COLORS.accent}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={C.accent} />
         }
       />
 
@@ -486,58 +414,48 @@ export default function ProfileScreen() {
       <NoNetworkOverlay
         visible={showNoNetwork}
         action="profile"
-        onRetry={() => {
-          if (isConnected) {
-            setShowNoNetwork(false);
-            fetchAll();
-          }
-        }}
+        onRetry={() => { if (isConnected) { setShowNoNetwork(false); fetchAll(); } }}
       />
 
-      {/* ── Bio edit modal ── */}
-      <Modal
-        visible={showBioModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowBioModal(false)}
-      >
-        <View style={styles.bioModalOverlay}>
-          <View style={styles.bioModal}>
-            <View style={styles.bioModalTitleRow}>
-              <EditIcon size={18} color={COLORS.accentSoft} />
-              <Text style={styles.bioModalTitle}>Edit bio</Text>
+      {/* Bio edit modal */}
+      <Modal visible={showBioModal} transparent animationType="slide" onRequestClose={() => setShowBioModal(false)}>
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: C.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 1, borderColor: C.border }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <PencilIcon size={18} color={C.accentSoft} />
+              <Text style={{ color: C.text, fontFamily: "DMSerifDisplay_400Regular", fontSize: 22 }}>Edit bio</Text>
             </View>
-            <Text style={styles.bioModalSub}>Describe yourself in a few words</Text>
-
+            <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 13, marginBottom: 16 }}>
+              Describe yourself in a few words
+            </Text>
             <TextInput
-              style={styles.bioInput}
+              style={{ backgroundColor: C.inputBg, borderRadius: 12, borderWidth: 1, borderColor: C.border, padding: 14, color: C.text, fontFamily: "Nunito_400Regular", fontSize: 15, minHeight: 80 }}
               value={bioText}
               onChangeText={setBioText}
-              placeholder="e.g. On a journey to healing 💜"
-              placeholderTextColor={COLORS.textMuted}
+              placeholder="e.g. On a journey to healing"
+              placeholderTextColor={C.textMuted}
               maxLength={100}
               multiline
               autoFocus
             />
-            <Text style={styles.bioCharCount}>{bioText.length}/100</Text>
-
-            <View style={styles.bioActions}>
-              <TouchableOpacity style={styles.bioCancelBtn} onPress={() => setShowBioModal(false)}>
-                <Text style={styles.bioCancelText}>Cancel</Text>
+            <Text style={{ color: C.textMuted, fontFamily: "Nunito_400Regular", fontSize: 11, textAlign: "right", marginTop: 6, marginBottom: 14 }}>
+              {bioText.length}/100
+            </Text>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <TouchableOpacity
+                style={{ flex: 1, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: C.border, alignItems: "center" }}
+                onPress={() => setShowBioModal(false)}
+              >
+                <Text style={{ color: C.textMuted, fontFamily: "Nunito_600SemiBold", fontSize: 14 }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.bioSaveBtn, savingBio && { opacity: 0.6 }]}
+                style={{ flex: 1, padding: 14, borderRadius: 14, backgroundColor: C.accent, alignItems: "center", opacity: savingBio ? 0.6 : 1 }}
                 onPress={handleSaveBio}
                 disabled={savingBio}
               >
                 {savingBio
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : (
-                    <View style={styles.bioSaveBtnInner}>
-                      <CheckIcon size={15} color="#fff" />
-                      <Text style={styles.bioSaveText}>Save</Text>
-                    </View>
-                  )
+                  : <Text style={{ color: "#fff", fontFamily: "Nunito_700Bold", fontSize: 14 }}>Save</Text>
                 }
               </TouchableOpacity>
             </View>
@@ -547,191 +465,3 @@ export default function ProfileScreen() {
     </View>
   );
 }
-
-
-  const styles = StyleSheet.create({
-
-  container: { flex: 1, backgroundColor: "#0F0A1E" },
-
-  list: { padding: 16, paddingTop: 56 },
-
-
-  // Header
-
-  profileHeaderRow: { flexDirection: "row", justifyContent: "flex-end", marginBottom: 8 },
-
-  settingsBtn: {
-
-  padding: 10, borderRadius: 12,
-
-  backgroundColor: "#1A1330",
-
-  borderWidth: 1, borderColor: "#2D2450",
-
-  },
-
-
-  // Profile header
-
-  profileHeader: { alignItems: "center", marginBottom: 24 },
-
-  avatar: { width: 88, height: 88, borderRadius: 44, justifyContent: "center", alignItems: "center", borderWidth: 2 },
-
-  avatarText: { fontSize: 40, fontFamily: "Inter_600SemiBold" },
-
-  pseudonym: { fontSize: 28, color: "#EDE8F5", fontFamily: "DMSerifDisplay_400Regular", marginBottom: 8 },
-
-
-  // Bio
-
-  bioRow: { marginTop: 8, marginBottom: 10, paddingHorizontal: 16, alignSelf: "stretch" },
-
-  bioInner: {
-
-  flexDirection: "row", alignItems: "center", justifyContent: "center",
-
-  backgroundColor: "#1A133088", borderRadius: 12, borderWidth: 1,
-
-  borderColor: "#2D245066", paddingHorizontal: 14, paddingVertical: 10, gap: 8,
-
-  },
-
-  bioText: { flex: 1, color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 13, textAlign: "center", lineHeight: 20 },
-
-  bioPlaceholder: { flex: 1, color: "#9B6FD4" + "66", fontFamily: "Nunito_400Regular", fontSize: 13, textAlign: "center", fontStyle: "italic" },
-
-  bioPencilWrap: { width: 22, height: 22, justifyContent: "center", alignItems: "center", flexShrink: 0 },
-
-
-  // Anonymous badge
-
-  anonBadge: {
-
-  flexDirection: "row", alignItems: "center", gap: 6,
-
-  backgroundColor: "#9B6FD4" + "22", borderRadius: 20,
-
-  paddingHorizontal: 14, paddingVertical: 5,
-
-  borderWidth: 1, borderColor: "#9B6FD4" + "44", marginBottom: 6,
-
-  },
-
-  anonBadgeText: { color: "#C4A3E8", fontFamily: "Inter_500Medium", fontSize: 12 },
-
-  joinDate: { color: "#8B7FA8", fontFamily: "Inter_400Regular", fontSize: 12, marginTop: 4 },
-
-
-  // Stats
-
-  statsRow: { flexDirection: "row", backgroundColor: "#1A1330", borderRadius: 16, borderWidth: 1, borderColor: "#2D2450", marginBottom: 16, padding: 16 },
-
-  statsPlaceholder: { backgroundColor: "#1A1330", borderRadius: 16, borderWidth: 1, borderColor: "#2D2450", marginBottom: 16, padding: 24, alignItems: "center" },
-
-  statCard: { flex: 1, alignItems: "center" },
-
-  statNumber: { fontSize: 26, fontFamily: "DMSerifDisplay_400Regular", marginBottom: 2 },
-
-  statLabel: { color: "#8B7FA8", fontFamily: "Inter_400Regular", fontSize: 12 },
-
-  statDivider: { width: 1, backgroundColor: "#2D2450", marginHorizontal: 8 },
-
-
-  // Privacy section
-
-  privacySection: { backgroundColor: "#1A1330", borderRadius: 16, borderWidth: 1, borderColor: "#2D2450", marginBottom: 16, overflow: "hidden" },
-
-  privacySectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, padding: 14, paddingBottom: 8 },
-
-  privacySectionTitle: { color: "#8B7FA8", fontFamily: "Inter_500Medium", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase" },
-
-  settingRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 14, borderTopWidth: 1, borderTopColor: "#2D2450" },
-
-  settingLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1, marginRight: 12 },
-
-  settingIconWrap: { width: 40, height: 40, borderRadius: 12, justifyContent: "center", alignItems: "center" },
-
-  settingInfo: { flex: 1 },
-
-  settingTitle: { color: "#EDE8F5", fontFamily: "Inter_500Medium", fontSize: 14, marginBottom: 2 },
-
-  settingDesc: { color: "#8B7FA8", fontFamily: "Inter_400Regular", fontSize: 12, lineHeight: 16 },
-
-  statusPreview: { margin: 14, marginTop: 4, borderRadius: 12, padding: 12, borderWidth: 1, backgroundColor: "#0F0A1E" },
-
-  statusPreviewRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-
-  statusPreviewDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#4CAF8F" },
-
-  statusPreviewText: { color: "#8B7FA8", fontFamily: "Inter_400Regular", fontSize: 12, flex: 1, lineHeight: 18 },
-
-
-  // Safety box
-
-  safetyBox: { backgroundColor: "#9B6FD4" + "15", borderRadius: 14, padding: 14, borderWidth: 1, borderColor: "#9B6FD4" + "33", marginBottom: 20 },
-
-  safetyTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 },
-
-  safetyTitle: { color: "#C4A3E8", fontFamily: "Inter_600SemiBold", fontSize: 14 },
-
-  safetyText: { color: "#8B7FA8", fontFamily: "Inter_400Regular", fontSize: 12, lineHeight: 18 },
-
-
-  // Tabs
-
-  tabRow: { flexDirection: "row", backgroundColor: "#1A1330", borderRadius: 12, padding: 4, marginBottom: 16, borderWidth: 1, borderColor: "#2D2450" },
-
-  tabBtn: { flex: 1, paddingVertical: 10, alignItems: "center", borderRadius: 10, flexDirection: "row", justifyContent: "center", gap: 6 },
-
-  tabBtnActive: { backgroundColor: "#9B6FD4" },
-
-  tabBtnText: { color: "#8B7FA8", fontFamily: "Inter_500Medium", fontSize: 14 },
-
-  tabBtnTextActive: { color: "#fff" },
-
-  tabCountBadge: { backgroundColor: "#9B6FD4", borderRadius: 10, minWidth: 18, height: 18, justifyContent: "center", alignItems: "center", paddingHorizontal: 5, marginLeft: 2 },
-
-  tabCountBadgeText: { color: "#fff", fontFamily: "Nunito_700Bold", fontSize: 10 },
-
-
-  // Empty state
-
-  empty: { alignItems: "center", paddingVertical: 40, paddingHorizontal: 24 },
-
-  emptyIconWrap: { marginBottom: 16, opacity: 0.5 },
-
-  emptyTitle: { color: "#EDE8F5", fontFamily: "DMSerifDisplay_400Regular", fontSize: 22, marginBottom: 8 },
-
-  emptyText: { color: "#8B7FA8", fontFamily: "Inter_400Regular", fontSize: 14, textAlign: "center", lineHeight: 22 },
-
-
-  // Bio modal
-
-  bioModalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" },
-
-  bioModal: { backgroundColor: "#1A1330", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 1, borderColor: "#2D2450" },
-
-  bioModalTitleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
-
-  bioModalTitle: { color: "#EDE8F5", fontFamily: "DMSerifDisplay_400Regular", fontSize: 22 },
-
-  bioModalSub: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 13, marginBottom: 16 },
-
-  bioInput: { backgroundColor: "#0F0A1E", borderRadius: 12, borderWidth: 1, borderColor: "#2D2450", padding: 14, color: "#EDE8F5", fontFamily: "Nunito_400Regular", fontSize: 15, minHeight: 80 },
-
-  bioCharCount: { color: "#8B7FA8", fontFamily: "Nunito_400Regular", fontSize: 11, textAlign: "right", marginTop: 6, marginBottom: 14 },
-
-  bioActions: { flexDirection: "row", gap: 10 },
-
-  bioCancelBtn: { flex: 1, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: "#2D2450", alignItems: "center" },
-
-  bioCancelText: { color: "#8B7FA8", fontFamily: "Nunito_600SemiBold", fontSize: 14 },
-
-  bioSaveBtn: { flex: 1, padding: 14, borderRadius: 14, backgroundColor: "#9B6FD4", alignItems: "center" },
-
-  bioSaveBtnInner: { flexDirection: "row", alignItems: "center", gap: 6 },
-
-  bioSaveText: { color: "#fff", fontFamily: "Nunito_700Bold", fontSize: 14 },
-
-  });
-
